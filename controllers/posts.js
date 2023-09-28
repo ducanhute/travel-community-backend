@@ -5,7 +5,7 @@ export const getPosts = async (req, res) => {
   const { page } = req.query;
 
   try {
-    const LIMIT = 4;
+    const LIMIT = 8;
     const startIndex = (Number(page) - 1) * LIMIT; // starting index of every page
     const total = await PostMessage.countDocuments({}); // total number of documents in database
     // Sort: newest to oldest: -1 give us the newest first, and fetch 8 post, skip startIndex posts(page2: get 8-16)
@@ -85,7 +85,7 @@ export const likePost = async (req, res) => {
 
   const post = await PostMessage.findById(_id);
 
-  const index = post.likes.findIndex((id) => id === String(req.userId));
+  const index = post?.likes.findIndex((id) => id === String(req.userId));
 
   if (index === -1) {
     // Already like a post
@@ -98,4 +98,20 @@ export const likePost = async (req, res) => {
   const updatePost = await PostMessage.findByIdAndUpdate(_id, post, { new: true });
 
   res.status(200).json(updatePost);
+};
+
+export const commentPost = async (req, res) => {
+  const { id } = req.params;
+  const { value } = req.body;
+  try {
+    const post = await PostMessage.findById(id);
+
+    post.comments.push(value);
+
+    const updatedPost = await PostMessage.findByIdAndUpdate(id, post, { new: true });
+
+    res.json(updatedPost);
+  } catch (error) {
+    console.log(error);
+  }
 };
